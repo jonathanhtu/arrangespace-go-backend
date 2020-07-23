@@ -1,20 +1,116 @@
 package main
 
 import (
-	"context"
-	"encoding/csv"
-	"flag"
 	"fmt"
-	"log"
-	"os"
-	"runtime/pprof"
+	"net/http"
 	"strconv"
-	"time"
 
-	"github.com/dankinder/handle"
-	"github.com/jedib0t/go-pretty/table"
+	"github.com/gorilla/mux"
+	"github.com/jonathanhtu/arrangespace-go-backend/controllers"
 )
 
+const httpPort = 3000
+
+func HelloWorld(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "hello world")
+}
+
+func setupRoutes(r *mux.Router) {
+	r.HandleFunc("/", HelloWorld)
+
+	/* Arrangment Routes */
+	r.HandleFunc("/arrangment/{id}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			controllers.GetArrangement(w, r)
+
+		case "POST":
+			controllers.CreateArrangement(w, r)
+
+		default:
+			fmt.Fprintf(w, "Only GET and POST methods are supported.")
+		}
+	})
+
+	r.HandleFunc("/arrangment/{id}/export/{type}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			controllers.ExportArrangement(w, r)
+
+		default:
+			fmt.Fprintf(w, "Only GET method is supported.")
+		}
+	})
+
+	r.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			controllers.GetUsers(w, r)
+
+		default:
+			fmt.Fprintf(w, "Only GET method is supported.")
+		}
+	})
+
+	r.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			controllers.GetSelf(w, r)
+
+		default:
+			fmt.Fprintf(w, "Only GET method is supported.")
+		}
+	})
+
+	r.HandleFunc("/users/{id}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			controllers.GetUser(w, r)
+
+		default:
+			fmt.Fprintf(w, "Only GET method is supported.")
+		}
+	})
+
+	r.HandleFunc("/users/{id}/arrangements", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			controllers.GetUserArrangement(w, r)
+
+		default:
+			fmt.Fprintf(w, "Only GET method is supported.")
+		}
+	})
+
+	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "POST":
+			controllers.LogIn(w, r)
+
+		default:
+			fmt.Fprintf(w, "Only POST method is supported.")
+		}
+	})
+
+	r.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "POST":
+			controllers.LogOut(w, r)
+
+		default:
+			fmt.Fprintf(w, "Only POST method is supported.")
+		}
+	})
+
+}
+
+func main() {
+	r := mux.NewRouter()
+	setupRoutes(r)
+	http.ListenAndServe(":"+strconv.Itoa(httpPort), r)
+}
+
+/*
 var itemsFile string
 var rulesFile string
 var groupsFile string
@@ -33,11 +129,9 @@ func init() {
 	flag.IntVar(&maxGroupSize, "max-size", 0, "maximum size of a group")
 	flag.IntVar(&maxNumGroups, "max-groups", 0, "maximum number of groups")
 	flag.IntVar(&timeoutSeconds, "timeout-secs", 0, "after this many seconds, return the best arrangement found so far")
-}
+}*/
 
-// TODO better help text
-
-func main() {
+/*func main() {
 	flag.Parse()
 	if itemsFile == "" || rulesFile == "" {
 		fmt.Println("-items and -rules are required")
@@ -119,6 +213,7 @@ func main() {
 	}
 	fmt.Println(tw.Render())
 }
+
 
 func getRecords(csvPath string) [][]string {
 	f, err := os.Open(csvPath)
@@ -210,3 +305,4 @@ func readGroupsFromCSV(csvPath string) []*Group {
 	}
 	return groups
 }
+*/
