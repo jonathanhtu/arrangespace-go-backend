@@ -11,12 +11,17 @@ import (
 
 const httpPort = 3000
 
-func HelloWorld(w http.ResponseWriter, r *http.Request) {
+func resolveBadRequestMethod(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusBadRequest)
+	fmt.Fprintf(w, "Unrecognized method")
+}
+
+func Home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "hello world")
 }
 
 func setupRoutes(r *mux.Router) {
-	r.HandleFunc("/", HelloWorld)
+	r.HandleFunc("/", Home)
 
 	/* Arrangment Routes */
 	r.HandleFunc("/arrangment/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +33,7 @@ func setupRoutes(r *mux.Router) {
 			controllers.CreateArrangement(w, r)
 
 		default:
-			fmt.Fprintf(w, "Only GET and POST methods are supported.")
+			resolveBadRequestMethod(w)
 		}
 	})
 
@@ -38,9 +43,11 @@ func setupRoutes(r *mux.Router) {
 			controllers.ExportArrangement(w, r)
 
 		default:
-			fmt.Fprintf(w, "Only GET method is supported.")
+			resolveBadRequestMethod(w)
 		}
 	})
+
+	/* User Routes */
 
 	r.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -48,7 +55,7 @@ func setupRoutes(r *mux.Router) {
 			controllers.GetUsers(w, r)
 
 		default:
-			fmt.Fprintf(w, "Only GET method is supported.")
+			resolveBadRequestMethod(w)
 		}
 	})
 
@@ -58,7 +65,7 @@ func setupRoutes(r *mux.Router) {
 			controllers.GetSelf(w, r)
 
 		default:
-			fmt.Fprintf(w, "Only GET method is supported.")
+			resolveBadRequestMethod(w)
 		}
 	})
 
@@ -68,7 +75,7 @@ func setupRoutes(r *mux.Router) {
 			controllers.GetUser(w, r)
 
 		default:
-			fmt.Fprintf(w, "Only GET method is supported.")
+			resolveBadRequestMethod(w)
 		}
 	})
 
@@ -78,9 +85,11 @@ func setupRoutes(r *mux.Router) {
 			controllers.GetUserArrangement(w, r)
 
 		default:
-			fmt.Fprintf(w, "Only GET method is supported.")
+			resolveBadRequestMethod(w)
 		}
 	})
+
+	/* Session Routes */
 
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -88,7 +97,7 @@ func setupRoutes(r *mux.Router) {
 			controllers.LogIn(w, r)
 
 		default:
-			fmt.Fprintf(w, "Only POST method is supported.")
+			resolveBadRequestMethod(w)
 		}
 	})
 
@@ -98,7 +107,17 @@ func setupRoutes(r *mux.Router) {
 			controllers.LogOut(w, r)
 
 		default:
-			fmt.Fprintf(w, "Only POST method is supported.")
+			resolveBadRequestMethod(w)
+		}
+	})
+
+	r.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "POST":
+			controllers.Signup(w, r)
+
+		default:
+			resolveBadRequestMethod(w)
 		}
 	})
 
@@ -107,6 +126,8 @@ func setupRoutes(r *mux.Router) {
 func main() {
 	r := mux.NewRouter()
 	setupRoutes(r)
+	r.Use(LogRequest)
+	r.Use(UserAuth)
 	http.ListenAndServe(":"+strconv.Itoa(httpPort), r)
 }
 
