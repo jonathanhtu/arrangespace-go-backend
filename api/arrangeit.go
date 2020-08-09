@@ -67,6 +67,7 @@ type Group struct {
 	MinSize int
 	MaxSize int
 	Items   []*Item
+	Locked  bool
 }
 
 // digest produces a unique hash digest of the group, intended such that groups that are "equivalent" (e.g. regardless
@@ -89,6 +90,7 @@ func (g *Group) Copy() *Group {
 		MinSize: g.MinSize,
 		MaxSize: g.MaxSize,
 		Items:   make([]*Item, 0, len(g.Items)),
+		Locked:  g.Locked,
 	}
 	newGroup.Items = append(newGroup.Items, g.Items...)
 	return newGroup
@@ -294,6 +296,7 @@ func (r *runner) getRandomState() *State {
 			MinSize: group.MinSize,
 			MaxSize: group.MaxSize,
 			Items:   make([]*Item, 0, len(r.items)/len(r.groups)),
+			Locked:  group.Locked,
 		})
 	}
 
